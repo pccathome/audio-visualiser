@@ -7,7 +7,6 @@ import FragmentShader from './shader/fragment.glsl?raw'
 import matcap from '/black_cap2.png'
 import loadingIco from './components/loadingIco.vue'
 import pageWrap from './components/pageWrap.vue'
-import gsap from 'gsap'
 
 const webgl = ref(null)
 let controls = null
@@ -19,6 +18,21 @@ const sizes = {
     width: window.innerWidth,
     height: window.innerHeight
 }
+
+// 調整視窗大小
+window.addEventListener('resize', () => {
+    // Update sizes
+    sizes.width = window.innerWidth
+    sizes.height = window.innerHeight
+
+    // Update camera
+    camera.aspect = sizes.width / sizes.height
+    camera.updateProjectionMatrix()
+
+    // Update renderer
+    renderer.setSize(sizes.width, sizes.height)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+})
 
 // Camera
 let frustumSize = 1
@@ -37,21 +51,6 @@ scene.add(camera)
 const renderer = new THREE.WebGLRenderer({ antialias: true })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-
-// 調整視窗大小
-const handleResize = () => {
-    // 更新畫面尺寸
-    sizes.width = window.innerWidth
-    sizes.height = window.innerHeight
-
-    // 更新攝像機
-    camera.aspect = sizes.width / sizes.height
-    camera.updateProjectionMatrix()
-
-    // 更新渲染器
-    renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-}
 
 // audio
 const isPlaying = ref(false)
@@ -168,7 +167,7 @@ onBeforeUnmount(() => {
 <template>
     <pageWrap>
         <div class="outline-none w-full h-full absolute z-0" ref="webgl"></div>
-        <div class="h-screen inset-0 flex items-center justify-center mt-28 sm:mt-0">
+        <div class="absolute h-dvh inset-0 flex items-center justify-center mt-28 sm:mt-0">
             <div v-if="loading" class="z-10">
                 <loadingIco />
             </div>
