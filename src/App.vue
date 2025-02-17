@@ -1,38 +1,42 @@
 <script setup>
 import { onMounted, onBeforeUnmount, ref } from 'vue'
 import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import VertexShader from './shader/vertext.glsl?raw'
 import FragmentShader from './shader/fragment.glsl?raw'
 import matcap from '/black_cap2.png'
 import loadingIco from './components/loadingIco.vue'
 import pageWrap from './components/pageWrap.vue'
+import Header from './components/header.vue'
+import footerInfo from './components/footerInfo.vue'
 
+// Ref
 const webgl = ref(null)
 let controls = null
+
+// Scene
+const scene = new THREE.Scene()
+
+// Clock for consistent animations
 const clock = new THREE.Clock()
 
-// 場景、攝像機、渲染器
-const scene = new THREE.Scene()
+// Loading Manager
+const loadingManager = new THREE.LoadingManager(
+    () => {
+        loading.value = false
+        isPlaying.value = false
+    },
+    (file, loaded, total) => {
+        const progress = loaded / total
+        console.log(`Loading audio: ${progress * 100}%`)
+    }
+)
+
+// Resize
 const sizes = {
     width: window.innerWidth,
     height: window.innerHeight
 }
-
-// 調整視窗大小
-window.addEventListener('resize', () => {
-    // Update sizes
-    sizes.width = window.innerWidth
-    sizes.height = window.innerHeight
-
-    // Update camera
-    camera.aspect = sizes.width / sizes.height
-    camera.updateProjectionMatrix()
-
-    // Update renderer
-    renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-})
 
 // Camera
 let frustumSize = 1
@@ -52,21 +56,25 @@ const renderer = new THREE.WebGLRenderer({ antialias: true })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
-// audio
+// Handle Resize
+window.addEventListener('resize', () => {
+    // Update sizes
+    sizes.width = window.innerWidth
+    sizes.height = window.innerHeight
+
+    // Update camera
+    camera.aspect = sizes.width / sizes.height
+    camera.updateProjectionMatrix()
+
+    // Update renderer
+    renderer.setSize(sizes.width, sizes.height)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+})
+
+// Audio --------------------------------------
 const isPlaying = ref(false)
 const audio = ref(null)
 const loading = ref(true)
-
-const loadingManager = new THREE.LoadingManager(
-    () => {
-        loading.value = false
-        isPlaying.value = false
-    },
-    (file, loaded, total) => {
-        const progress = loaded / total
-        console.log(`Loading audio: ${progress * 100}%`)
-    }
-)
 
 const file = '/knekksans.mp3'
 const fftSize = 256
@@ -105,6 +113,7 @@ const pauseAudio = () => {
 
 const analyser = new THREE.AudioAnalyser(audio.value, fftSize)
 
+// Object Handle Resize
 let imageAspect = 1
 let a1, a2
 if (sizes.height / sizes.width > imageAspect) {
@@ -115,12 +124,12 @@ if (sizes.height / sizes.width > imageAspect) {
     a2 = (sizes.height / sizes.width) * imageAspect
 }
 
-// 設置場景
+// Scene Setup
 const setupScene = () => {
-    // 渲染器添加到 DOM
+    // Canvas
     webgl.value.appendChild(renderer.domElement)
 
-    // 物件
+    // Object
     const geometry = new THREE.PlaneGeometry(1, 1, 1, 1)
     const material = new THREE.ShaderMaterial({
         vertexShader: VertexShader,
@@ -153,21 +162,26 @@ const setupScene = () => {
 
 onMounted(() => {
     setupScene()
-    window.addEventListener('resize', handleResize)
 })
 
 onBeforeUnmount(() => {
-    // 清理資源
-    window.removeEventListener('resize', handleResize)
+    window.addEventListener('resize')
     renderer.setAnimationLoop(null) // 停止動畫循環
     renderer.dispose()
+    if (audio.value) {
+        audio.value.stop() // 停止音頻播放
+        audio.value.disconnect() // 斷開音頻連接
+        audio.value.buffer = null
+        listener.remove(audio.value)
+    }
 })
 </script>
 
 <template>
     <pageWrap>
-        <div class="outline-none w-full h-full absolute z-0" ref="webgl"></div>
-        <div class="absolute h-dvh inset-0 flex items-center justify-center mt-28 sm:mt-0">
+        <Header />
+        <div class="outline-none w-full h-dvh" ref="webgl"></div>
+        <div class="absolute inset-0 h-dvh flex items-center justify-center mt-36 sm:mt-0">
             <div v-if="loading" class="z-10">
                 <loadingIco />
             </div>
@@ -179,5 +193,21 @@ onBeforeUnmount(() => {
                 {{ isPlaying ? 'PAUSE' : 'PLAY' }}
             </button>
         </div>
+        <footerInfo>
+            <template v-slot:first></template>
+            <template v-slot:second>
+                <a
+                    href="https://www.youtube.com/watch?v=3OKPA8ne57A&ab_channel=RayFerrofluid"
+                    target="_blank"
+                    class="underline-offset-2"
+                    >Ferrofluid Speaker Audio Visualizer.
+                </a>
+            </template>
+            <template v-slot:github>
+                <a href="https://github.com/pccathome/audio-visualiser" target="_blank" class="underline-offset-2"
+                    >GitHub</a
+                >
+            </template>
+        </footerInfo>
     </pageWrap>
 </template>
