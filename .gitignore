@@ -10,11 +10,14 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+package-lock.json
+.vscode
+.gitignore
+.prettierrc.json
 *.local
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+.vscode
 .idea
 .DS_Store
 *.suo
