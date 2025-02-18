@@ -165,15 +165,41 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-    window.addEventListener('resize')
-    renderer.setAnimationLoop(null) // 停止動畫循環
+    // Remove event listener
+    window.removeEventListener('resize', () => {
+        sizes.width = window.innerWidth
+        sizes.height = window.innerHeight
+        camera.aspect = sizes.width / sizes.height
+        camera.updateProjectionMatrix()
+        renderer.setSize(sizes.width, sizes.height)
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    })
+
+    // Cleanup Three.js resources
+    scene.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+            object.geometry.dispose()
+            object.material.dispose()
+        }
+    })
+    
+    // Stop animation and dispose renderer
+    renderer.setAnimationLoop(null)
     renderer.dispose()
+
+    // Cleanup clock
+    clock.stop()
+
+    // Cleanup audio
     if (audio.value) {
-        audio.value.stop() // 停止音頻播放
-        audio.value.disconnect() // 斷開音頻連接
+        audio.value.stop()
+        audio.value.disconnect()
         audio.value.buffer = null
         listener.remove(audio.value)
     }
+
+    // Clear scene
+    scene.clear()
 })
 </script>
 
