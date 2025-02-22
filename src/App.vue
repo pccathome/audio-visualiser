@@ -182,7 +182,7 @@ onBeforeUnmount(() => {
             object.material.dispose()
         }
     })
-    
+
     // Stop animation and dispose renderer
     renderer.setAnimationLoop(null)
     renderer.dispose()
