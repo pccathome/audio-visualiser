@@ -1,8 +1,8 @@
-[![Screenshot](./public/screenshot.webp)](https://audio-visualiser.zeabur.app/)
+[![Screenshot](./public/screenshot.webp)](https://audio-visualiser-ebw.pages.dev/)
 
 # Audio Visualiser
 
 -   VUE + Three.js
 -   Audio Visualiser simulate Ferrofluid speaker.
 
-[demo](https://audio-visualiser.zeabur.app/)
+[demo](https://https://audio-visualiser-ebw.pages.dev/)
