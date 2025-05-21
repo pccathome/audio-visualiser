@@ -5,4 +5,4 @@
 -   VUE + Three.js
 -   Audio Visualiser simulate Ferrofluid speaker.
 
-[demo](https://https://audio-visualiser-ebw.pages.dev/)
+[demo](https://audio-visualiser-ebw.pages.dev/)
